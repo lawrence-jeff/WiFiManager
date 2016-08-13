@@ -211,6 +211,78 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 }
 
 
+boolean  WiFiManager::startConfigPortalwithFallBack(char const *apName, char const *apPassword) {
+  //setup AP
+  WiFi.mode(WIFI_AP);
+  DEBUG_WM("SET AP");
+
+  _apName = apName;
+  _apPassword = apPassword;
+
+  //notify we entered AP mode
+  if ( _apcallback != NULL) {
+    _apcallback(this);
+  }
+
+  connect = false;
+  setupConfigPortal();
+
+  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
+    //DNS
+    dnsServer->processNextRequest();
+    //HTTP
+    server->handleClient();
+
+
+    if (connect) {
+      connect = false;
+      delay(2000);
+      DEBUG_WM(F("Connecting to new AP:"));
+      DEBUG_WM(F(_ssid));
+      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
+        DEBUG_WM(F("Failed to connect."));
+      } else {
+        //connected
+        WiFi.mode(WIFI_STA);
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        break;
+      }
+
+      if (_shouldBreakAfterConfig) {
+        //flag set to exit after config after trying to connect
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        break;
+      }
+    }
+    yield();
+  }
+  
+  server.reset();
+  dnsServer.reset();
+  WiFi.disconnect(true);
+  
+  DEBUG_WM(F("Quiting portal page, try to connect using saved info"));
+  WiFi.mode(WIFI_STA);
+
+  if (connectWifi("", "") == WL_CONNECTED)   {
+    DEBUG_WM(F("IP Address:"));
+    DEBUG_WM(WiFi.localIP());
+  }
+  else { DEBUG_WM(F("Either no network saved or it didn't connect"));}
+
+  return  WiFi.status() == WL_CONNECTED;
+}
+
+
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
 
