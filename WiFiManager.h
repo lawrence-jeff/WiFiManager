@@ -71,6 +71,8 @@ class WiFiManager
 
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
+    //if you want to start the config portal and then try to connect
+    boolean       startConfigPortalwithFallBack(char const *apName, char const *apPassword = NULL);
 
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
