@@ -673,7 +673,7 @@ void WiFiManager::handleAppParam() {
   page += FPSTR(HTTP_HEAD_END);
 
   
-  page += FPSTR(HTTP_FORM_START);
+  page += FPSTR(HTTP_APFORM_START);
   char parLength[2];
   // add the extra parameters to the form
   for (int i = 0; i < _paramsCount; i++) {
@@ -702,8 +702,7 @@ void WiFiManager::handleAppParam() {
 
  
 
-  page += FPSTR(HTTP_FORM_END);
-  page += FPSTR(HTTP_SCAN_LINK);
+  page += FPSTR(HTTP_APFORM_END);
 
   page += FPSTR(HTTP_END);
 
