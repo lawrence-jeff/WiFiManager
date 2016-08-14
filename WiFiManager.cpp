@@ -113,6 +113,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
   server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
+  server->on("/ap", std::bind(&WiFiManager::handleAppParam, this, true));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
@@ -658,6 +659,61 @@ void WiFiManager::handleWifiSave() {
 
   connect = true; //signal ready to connect/reset
 }
+
+
+
+/** App Parameter config page handler */
+void WiFiManager::handleAppParam(boolean scan) {
+
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Config ESP");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+
+  
+  page += FPSTR(HTTP_FORM_START);
+  char parLength[2];
+  // add the extra parameters to the form
+  for (int i = 0; i < _paramsCount; i++) {
+    if (_params[i] == NULL) {
+      break;
+    }
+
+    String pitem = FPSTR(HTTP_FORM_PARAM);
+    if (_params[i]->getID() != NULL) {
+      pitem.replace("{i}", _params[i]->getID());
+      pitem.replace("{n}", _params[i]->getID());
+      pitem.replace("{p}", _params[i]->getPlaceholder());
+      snprintf(parLength, 2, "%d", _params[i]->getValueLength());
+      pitem.replace("{l}", parLength);
+      pitem.replace("{v}", _params[i]->getValue());
+      pitem.replace("{c}", _params[i]->getCustomHTML());
+    } else {
+      pitem = _params[i]->getCustomHTML();
+    }
+
+    page += pitem;
+  }
+  if (_params[0] != NULL) {
+    page += "<br/>";
+  }
+
+ 
+
+  page += FPSTR(HTTP_FORM_END);
+  page += FPSTR(HTTP_SCAN_LINK);
+
+  page += FPSTR(HTTP_END);
+
+  server->send(200, "text/html", page);
+
+
+  DEBUG_WM(F("Sent app parameter page"));
+}
+
+
 
 /** Handle the info page */
 void WiFiManager::handleInfo() {
