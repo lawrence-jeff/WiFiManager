@@ -113,7 +113,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
   server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
-  server->on("/ap", std::bind(&WiFiManager::handleAppParam, this, true));
+  server->on("/ap", std::bind(&WiFiManager::handleAppParam, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
@@ -663,7 +663,7 @@ void WiFiManager::handleWifiSave() {
 
 
 /** App Parameter config page handler */
-void WiFiManager::handleAppParam(boolean scan) {
+void WiFiManager::handleAppParam() {
 
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Config ESP");
