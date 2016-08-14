@@ -238,12 +238,12 @@ boolean  WiFiManager::startConfigPortalwithFallBack(char const *apName, char con
       connect = false;
       delay(2000);
       DEBUG_WM(F("Connecting to new AP:"));
-      DEBUG_WM(F(_ssid));
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
-        DEBUG_WM(F("Failed to connect."));
+        DEBUG_WM(F("Failed to connect in ConnectWfi function."));
       } else {
         //connected
+        DEBUG_WM(F("Successfully connected in ConnectWfi function."));
         WiFi.mode(WIFI_STA);
         //notify that configuration has changed and any optional parameters should be saved
         if ( _savecallback != NULL) {
@@ -268,7 +268,7 @@ boolean  WiFiManager::startConfigPortalwithFallBack(char const *apName, char con
   
   server.reset();
   dnsServer.reset();
-  WiFi.disconnect(true);
+  //WiFi.disconnect(true);
   
   DEBUG_WM(F("Quiting portal page, try to connect using saved info"));
   WiFi.mode(WIFI_STA);
@@ -299,6 +299,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   }
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
+    DEBUG_WM("COnnecting using New SSID");
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
     if (WiFi.SSID()) {
