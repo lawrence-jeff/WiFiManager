@@ -114,6 +114,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
   server->on("/ap", std::bind(&WiFiManager::handleAppParam, this));
+  server->on("/apsave", std::bind(&WiFiManager::handleAppParamSave, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
@@ -703,15 +704,45 @@ void WiFiManager::handleAppParam() {
  
 
   page += FPSTR(HTTP_APFORM_END);
+  page += FPSTR(HTTP_END);
+  server->send(200, "text/html", page);
+  DEBUG_WM(F("Sent app parameter page"));
+}
 
+/** Handle the WLAN save form and redirect to WLAN config page again */
+void WiFiManager::handleAppParamSave() {
+  DEBUG_WM(F("AppParam save"));
+
+  //parameters
+  for (int i = 0; i < _paramsCount; i++) {
+    if (_params[i] == NULL) {
+      break;
+    }
+    //read parameter
+    String value = server->arg(_params[i]->getID()).c_str();
+    //store it in array
+    value.toCharArray(_params[i]->_value, _params[i]->_length);
+    DEBUG_WM(F("Parameter"));
+    DEBUG_WM(_params[i]->getID());
+    DEBUG_WM(value);
+  }
+
+  
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Parameters Saved");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+  page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
 
   server->send(200, "text/html", page);
 
+  DEBUG_WM(F("Sent appparam save page"));
 
-  DEBUG_WM(F("Sent app parameter page"));
+  connect = true; //signal ready to connect/reset
 }
-
 
 
 /** Handle the info page */
